@@ -17,6 +17,7 @@ import java.security.cert.CertificateEncodingException;
 public class SSLCertificateChecker extends CordovaPlugin {
 
   private static final String ACTION_CHECK_EVENT = "check";
+  private static final String ACTION_GET_FINGERPRINT_EVENT = "getFingerprint";
   private static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
   @Override
@@ -38,6 +39,19 @@ public class SSLCertificateChecker extends CordovaPlugin {
           } catch (Exception e) {
             callbackContext.error("CONNECTION_NOT_SECURE");
             //callbackContext.error("CONNECTION_FAILED. Details: " + e.getMessage());
+          }
+        }
+      });
+      return true;
+	} else if(ACTION_GET_FINGERPRINT_EVENT.equals(action)) {
+      cordova.getThreadPool().execute(new Runnable() {
+        public void run() {
+          try {
+            final String serverURL = args.getString(0);
+            final String serverCertFingerprint = getFingerprint(serverURL);
+            callbackContext.success(serverCertFingerprint);
+          } catch (Exception e) {
+            callbackContext.error("CERTIFICATE_READ_ERROR");
           }
         }
       });

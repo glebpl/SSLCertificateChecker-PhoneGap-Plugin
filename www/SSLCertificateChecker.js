@@ -30,6 +30,20 @@ SSLCertificateChecker.prototype.check = function (successCallback, errorCallback
   exec(successCallback, errorCallback, "SSLCertificateChecker", "check", [serverURL, false, fpArr]);
 };
 
+SSLCertificateChecker.prototype.getFingerprint = function (successCallback, errorCallback, serverURL) {
+  if (typeof errorCallback != "function") {
+    console.log("SSLCertificateChecker.get failure: errorCallback parameter must be a function");
+    return
+  }
+
+  if (typeof successCallback != "function") {
+    console.log("SSLCertificateChecker.get failure: successCallback parameter must be a function");
+    return
+  }
+
+  exec(successCallback, errorCallback, "SSLCertificateChecker", "getFingerprint", [serverURL]);
+};
+
 SSLCertificateChecker.prototype.checkInCertChain = function (successCallback, errorCallback, serverURL, allowedSHA1FingerprintOrArray, allowedSHA1FingerprintAlt) {
   if (typeof errorCallback != "function") {
     console.log("SSLCertificateChecker.find failure: errorCallback parameter must be a function");
