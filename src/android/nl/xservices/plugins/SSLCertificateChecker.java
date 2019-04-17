@@ -19,6 +19,7 @@ public class SSLCertificateChecker extends CordovaPlugin {
   private static final String ACTION_CHECK_EVENT = "check";
   private static final String ACTION_GET_FINGERPRINT_EVENT = "getFingerprint";
   private static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+  private static final String DEFAULT_ALGORITHM = "SHA-1";
 
   @Override
   public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -28,7 +29,8 @@ public class SSLCertificateChecker extends CordovaPlugin {
           try {
             final String serverURL = args.getString(0);
             final JSONArray allowedFingerprints = args.getJSONArray(2);
-            final String serverCertFingerprint = getFingerprint(serverURL);
+            final String algorithm = args.optString(3, DEFAULT_ALGORITHM);
+            final String serverCertFingerprint = getFingerprint(serverURL, algorithm);
             for (int j=0; j<allowedFingerprints.length(); j++) {
               if (allowedFingerprints.get(j).toString().equalsIgnoreCase(serverCertFingerprint)) {
                 callbackContext.success("CONNECTION_SECURE");
@@ -48,7 +50,8 @@ public class SSLCertificateChecker extends CordovaPlugin {
         public void run() {
           try {
             final String serverURL = args.getString(0);
-            final String serverCertFingerprint = getFingerprint(serverURL);
+            final String algorithm = args.optString(1, DEFAULT_ALGORITHM);
+            final String serverCertFingerprint = getFingerprint(serverURL, algorithm);
             callbackContext.success(serverCertFingerprint);
           } catch (Exception e) {
             callbackContext.error("CERTIFICATE_READ_ERROR");
@@ -62,12 +65,12 @@ public class SSLCertificateChecker extends CordovaPlugin {
     }
   }
 
-  private static String getFingerprint(String httpsURL) throws IOException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
+  private static String getFingerprint(String httpsURL, String algorithm) throws IOException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
     final HttpsURLConnection con = (HttpsURLConnection) new URL(httpsURL).openConnection();
     con.setConnectTimeout(5000);
     con.connect();
     final Certificate cert = con.getServerCertificates()[0];
-    final MessageDigest md = MessageDigest.getInstance("SHA256");
+    final MessageDigest md = MessageDigest.getInstance(algorithm);
     md.update(cert.getEncoded());
     return dumpHex(md.digest());
   }
